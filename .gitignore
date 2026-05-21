@@ -1,5 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# Shrimp Task Manager (내부 git 저장소 포함)
+/shrimp_data
+
 # dependencies
 /node_modules
 /.pnp
