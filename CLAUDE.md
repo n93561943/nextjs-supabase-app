@@ -78,9 +78,9 @@ npx supabase gen types typescript --project-id <프로젝트ID> > types/database
 상대 경로 대신 항상 `@/` 별칭을 사용합니다:
 
 ```typescript
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
-import { createClient } from '@/lib/supabase/server'
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/server";
 ```
 
 ### 컴포넌트 분류
