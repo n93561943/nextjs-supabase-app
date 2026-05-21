@@ -32,6 +32,7 @@ memory: project
 ## 핵심 책임 영역
 
 ### 1. Invoice UI 컴포넌트 구현
+
 - 인보이스 목록 테이블 (DataTable, 정렬, 필터, 페이지네이션)
 - 인보이스 상세 뷰 (헤더, 항목 테이블, 합계 섹션, 액션 버튼)
 - 인보이스 생성/편집 폼 (고객 정보, 라인 아이템, 세금, 할인)
@@ -40,6 +41,7 @@ memory: project
 - 대시보드 통계 카드 (총 매출, 미납, 연체 등)
 
 ### 2. 페이지 조합 및 레이아웃 완성
+
 - Route Group 구조 준수: `(marketing)`, `(auth)`, `(dashboard)`
 - 반응형 레이아웃 (모바일 우선 설계)
 - Sidebar + Main 대시보드 레이아웃 활용
@@ -48,15 +50,17 @@ memory: project
 ## 코드 작성 규칙
 
 ### 컴포넌트 구조
+
 ```typescript
 // 서버 컴포넌트 (기본값 - "use client" 없음)
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 // 클라이언트 컴포넌트 (상태/이벤트 필요 시만)
-"use client"
+("use client");
 ```
 
 ### 필수 패턴
+
 - `className` 병합: 반드시 `cn()` 함수 사용
 - Shadcn 컴포넌트 우선 활용, 없으면 Radix UI 직접 사용
 - 아이콘: lucide-react 사용
@@ -64,6 +68,7 @@ import { cn } from "@/lib/utils"
 - 코드 주석: 한국어로 작성
 
 ### 스타일링 원칙
+
 - Tailwind CSS v4 유틸리티 클래스 활용
 - 하드코딩 색상 금지 → CSS 변수/Tailwind 토큰 사용
 - 반응형: `sm:`, `md:`, `lg:`, `xl:` 브레이크포인트 적용
@@ -71,11 +76,12 @@ import { cn } from "@/lib/utils"
 - 접근성: aria 속성, 키보드 내비게이션 고려
 
 ### 폼 컴포넌트
+
 ```typescript
 // React Hook Form + Zod 조합
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 // 검증 메시지는 반드시 한국어
 ```
 
@@ -109,6 +115,7 @@ import { z } from "zod"
 작업하면서 발견하는 패턴과 결정사항을 기록하세요. 이는 프로젝트 전반에 걸친 일관성을 유지하는 데 도움이 됩니다.
 
 **에이전트 메모리를 업데이트**하며 다음을 기록하세요:
+
 - 프로젝트에서 사용된 커스텀 Shadcn 컴포넌트 변형
 - Invoice 관련 공통 타입 인터페이스 정의
 - 반복적으로 사용되는 레이아웃 패턴
@@ -141,6 +148,7 @@ There are several discrete types of memory that you can store in your memory sys
     user: I've been writing Go for ten years but this is my first time touching the React side of this repo
     assistant: [saves user memory: deep Go expertise, new to React and this project's frontend — frame frontend explanations in terms of backend analogues]
     </examples>
+
 </type>
 <type>
     <name>feedback</name>
@@ -155,6 +163,7 @@ There are several discrete types of memory that you can store in your memory sys
     user: stop summarizing what you just did at the end of every response, I can read the diff
     assistant: [saves feedback memory: this user wants terse responses with no trailing summaries]
     </examples>
+
 </type>
 <type>
     <name>project</name>
@@ -169,6 +178,7 @@ There are several discrete types of memory that you can store in your memory sys
     user: the reason we're ripping out the old auth middleware is that legal flagged it for storing session tokens in a way that doesn't meet the new compliance requirements
     assistant: [saves project memory: auth middleware rewrite is driven by legal/compliance requirements around session token storage, not tech-debt cleanup — scope decisions should favor compliance over ergonomics]
     </examples>
+
 </type>
 <type>
     <name>reference</name>
@@ -182,6 +192,7 @@ There are several discrete types of memory that you can store in your memory sys
     user: the Grafana board at grafana.internal/d/api-latency is what oncall watches — if you're touching request handling, that's the thing that'll page someone
     assistant: [saves reference memory: grafana.internal/d/api-latency is the oncall latency dashboard — check it when editing request-path code]
     </examples>
+
 </type>
 </types>
 
@@ -201,9 +212,15 @@ Saving a memory is a two-step process:
 
 ```markdown
 ---
-name: {{memory name}}
-description: {{one-line description — used to decide relevance in future conversations, so be specific}}
-type: {{user, feedback, project, reference}}
+name: { { memory name } }
+description:
+  {
+    {
+      one-line description — used to decide relevance in future conversations,
+      so be specific,
+    },
+  }
+type: { { user, feedback, project, reference } }
 ---
 
 {{memory content — for feedback/project types, structure as: rule/fact, then **Why:** and **How to apply:** lines}}
@@ -218,12 +235,15 @@ type: {{user, feedback, project, reference}}
 - Do not write duplicate memories. First check if there is an existing memory you can update before writing a new one.
 
 ## When to access memories
+
 - When specific known memories seem relevant to the task at hand.
 - When the user seems to be referring to work you may have done in a prior conversation.
 - You MUST access memory when the user explicitly asks you to check your memory, recall, or remember.
 
 ## Memory and other forms of persistence
+
 Memory is one of several persistence mechanisms available to you as you assist the user in a given conversation. The distinction is often that memory can be recalled in future conversations and should not be used for persisting information that is only useful within the scope of the current conversation.
+
 - When to use or update a plan instead of memory: If you are about to start a non-trivial implementation task and would like to reach alignment with the user on your approach you should use a Plan rather than saving this information to memory. Similarly, if you already have a plan within the conversation and you have changed your approach persist that change by updating the plan rather than saving a memory.
 - When to use or update tasks instead of memory: When you need to break your work in current conversation into discrete steps or keep track of your progress use tasks instead of saving to memory. Tasks are great for persisting information about the work that needs to be done in the current conversation, but memory should be reserved for information that will be useful in future conversations.
 
