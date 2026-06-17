@@ -14,13 +14,151 @@ export type Database = {
   };
   public: {
     Tables: {
+      events: {
+        Row: {
+          created_at: string | null;
+          description: string | null;
+          event_date: string | null;
+          host_id: string;
+          id: string;
+          invite_token: string;
+          location: string | null;
+          max_participants: number | null;
+          status: string | null;
+          title: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          description?: string | null;
+          event_date?: string | null;
+          host_id: string;
+          id?: string;
+          invite_token?: string;
+          location?: string | null;
+          max_participants?: number | null;
+          status?: string | null;
+          title: string;
+        };
+        Update: {
+          created_at?: string | null;
+          description?: string | null;
+          event_date?: string | null;
+          host_id?: string;
+          id?: string;
+          invite_token?: string;
+          location?: string | null;
+          max_participants?: number | null;
+          status?: string | null;
+          title?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "events_host_id_fkey";
+            columns: ["host_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      notices: {
+        Row: {
+          author_id: string | null;
+          content: string;
+          created_at: string | null;
+          event_id: string;
+          id: string;
+          is_pinned: boolean | null;
+          title: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          author_id?: string | null;
+          content: string;
+          created_at?: string | null;
+          event_id: string;
+          id?: string;
+          is_pinned?: boolean | null;
+          title: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          author_id?: string | null;
+          content?: string;
+          created_at?: string | null;
+          event_id?: string;
+          id?: string;
+          is_pinned?: boolean | null;
+          title?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notices_author_id_fkey";
+            columns: ["author_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notices_event_id_fkey";
+            columns: ["event_id"];
+            isOneToOne: false;
+            referencedRelation: "events";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      participants: {
+        Row: {
+          contact: string;
+          created_at: string | null;
+          event_id: string;
+          guest_token: string | null;
+          id: string;
+          name: string;
+          status: string | null;
+          user_id: string | null;
+        };
+        Insert: {
+          contact: string;
+          created_at?: string | null;
+          event_id: string;
+          guest_token?: string | null;
+          id?: string;
+          name: string;
+          status?: string | null;
+          user_id?: string | null;
+        };
+        Update: {
+          contact?: string;
+          created_at?: string | null;
+          event_id?: string;
+          guest_token?: string | null;
+          id?: string;
+          name?: string;
+          status?: string | null;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "participants_event_id_fkey";
+            columns: ["event_id"];
+            isOneToOne: false;
+            referencedRelation: "events";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       profiles: {
         Row: {
           avatar_url: string | null;
           bio: string | null;
           created_at: string;
+          display_name: string | null;
           full_name: string | null;
           id: string;
+          role: string | null;
           updated_at: string;
           username: string | null;
           website: string | null;
@@ -29,8 +167,10 @@ export type Database = {
           avatar_url?: string | null;
           bio?: string | null;
           created_at?: string;
+          display_name?: string | null;
           full_name?: string | null;
           id: string;
+          role?: string | null;
           updated_at?: string;
           username?: string | null;
           website?: string | null;
@@ -39,13 +179,101 @@ export type Database = {
           avatar_url?: string | null;
           bio?: string | null;
           created_at?: string;
+          display_name?: string | null;
           full_name?: string | null;
           id?: string;
+          role?: string | null;
           updated_at?: string;
           username?: string | null;
           website?: string | null;
         };
         Relationships: [];
+      };
+      settlement_payments: {
+        Row: {
+          confirmed_at: string | null;
+          id: string;
+          participant_id: string;
+          reported_at: string | null;
+          settlement_id: string;
+          status: string | null;
+        };
+        Insert: {
+          confirmed_at?: string | null;
+          id?: string;
+          participant_id: string;
+          reported_at?: string | null;
+          settlement_id: string;
+          status?: string | null;
+        };
+        Update: {
+          confirmed_at?: string | null;
+          id?: string;
+          participant_id?: string;
+          reported_at?: string | null;
+          settlement_id?: string;
+          status?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "settlement_payments_participant_id_fkey";
+            columns: ["participant_id"];
+            isOneToOne: false;
+            referencedRelation: "participants";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "settlement_payments_settlement_id_fkey";
+            columns: ["settlement_id"];
+            isOneToOne: false;
+            referencedRelation: "settlements";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      settlements: {
+        Row: {
+          account_holder: string | null;
+          account_number: string | null;
+          bank_name: string | null;
+          created_at: string | null;
+          event_id: string;
+          id: string;
+          per_person_amount: number | null;
+          status: string | null;
+          total_amount: number;
+        };
+        Insert: {
+          account_holder?: string | null;
+          account_number?: string | null;
+          bank_name?: string | null;
+          created_at?: string | null;
+          event_id: string;
+          id?: string;
+          per_person_amount?: number | null;
+          status?: string | null;
+          total_amount: number;
+        };
+        Update: {
+          account_holder?: string | null;
+          account_number?: string | null;
+          bank_name?: string | null;
+          created_at?: string | null;
+          event_id?: string;
+          id?: string;
+          per_person_amount?: number | null;
+          status?: string | null;
+          total_amount?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "settlements_event_id_fkey";
+            columns: ["event_id"];
+            isOneToOne: true;
+            referencedRelation: "events";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Views: {
