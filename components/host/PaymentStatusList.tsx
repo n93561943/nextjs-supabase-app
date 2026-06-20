@@ -1,14 +1,26 @@
 "use client";
 
-import { CheckIcon, CheckSquareIcon } from "lucide-react";
+import { CheckIcon, CheckSquareIcon, LockIcon } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { closeSettlement } from "@/app/(host)/events/_actions/closeSettlement";
 import {
   confirmAllPayments,
   confirmPayment,
 } from "@/app/(host)/events/_actions/confirmPayment";
 import { updateSettlementAccount } from "@/app/(host)/events/_actions/updateSettlementAccount";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -153,6 +165,8 @@ export function PaymentStatusList({
   const [isEditingAccount, setIsEditingAccount] = useState(false);
   const [isPending, startTransition] = useTransition();
 
+  const isClosed = settlement.status === "closed";
+
   // 상태별 통계
   const unpaidCount = payments.filter((p) => p.status === "unpaid").length;
   const reportedCount = payments.filter((p) => p.status === "reported").length;
@@ -182,8 +196,27 @@ export function PaymentStatusList({
     });
   }
 
+  function handleCloseSettlement() {
+    startTransition(async () => {
+      const result = await closeSettlement(settlement.id, eventId);
+      if ("error" in result) {
+        toast.error(result.error);
+      } else {
+        toast.success("정산이 마감되었습니다");
+      }
+    });
+  }
+
   return (
     <div className="space-y-4">
+      {/* 마감된 정산 안내 배지 */}
+      {isClosed && (
+        <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          <LockIcon className="h-4 w-4 shrink-0" />
+          <span>마감된 정산입니다. 납부 신고 및 확인이 불가합니다.</span>
+        </div>
+      )}
+
       {/* 납부 현황 요약 */}
       <div className="grid grid-cols-3 gap-3">
         <div className="rounded-lg border p-3 text-center">
@@ -200,8 +233,8 @@ export function PaymentStatusList({
         </div>
       </div>
 
-      {/* 전체 확인 버튼 */}
-      {reportedCount > 0 && (
+      {/* 전체 확인 버튼 — 마감 전에만 표시 */}
+      {!isClosed && reportedCount > 0 && (
         <Button
           variant="outline"
           size="sm"
@@ -214,19 +247,58 @@ export function PaymentStatusList({
         </Button>
       )}
 
+      {/* 정산 마감 버튼 — 상태가 open일 때만 표시 */}
+      {!isClosed && (
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full border-amber-400 text-amber-700 hover:bg-amber-50"
+              disabled={isPending}
+            >
+              <LockIcon className="mr-2 h-4 w-4" />
+              정산 마감
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>정산을 마감할까요?</AlertDialogTitle>
+              <AlertDialogDescription>
+                마감 후에는 참여자의 납부 신고와 호스트의 납부 확인이 모두
+                불가합니다. 이 작업은 되돌릴 수 없습니다.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>취소</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleCloseSettlement}
+                disabled={isPending}
+                className="bg-amber-600 hover:bg-amber-700"
+              >
+                마감하기
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+
       {/* 계좌 정보 카드 */}
       <Card>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm">입금 계좌</CardTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 text-xs"
-              onClick={() => setIsEditingAccount(!isEditingAccount)}
-            >
-              {isEditingAccount ? "취소" : "수정"}
-            </Button>
+            {/* 마감 전에만 계좌 수정 가능 */}
+            {!isClosed && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs"
+                onClick={() => setIsEditingAccount(!isEditingAccount)}
+              >
+                {isEditingAccount ? "취소" : "수정"}
+              </Button>
+            )}
           </div>
         </CardHeader>
         <Separator />
@@ -264,7 +336,8 @@ export function PaymentStatusList({
                 </>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  계좌 정보가 없습니다. 수정 버튼을 눌러 입력하세요.
+                  계좌 정보가 없습니다.{" "}
+                  {!isClosed && "수정 버튼을 눌러 입력하세요."}
                 </p>
               )}
             </div>
@@ -308,7 +381,8 @@ export function PaymentStatusList({
                   {formatDate(payment.confirmed_at)}
                 </TableCell>
                 <TableCell>
-                  {payment.status === "reported" && (
+                  {/* 마감 전 && 납부신고 상태일 때만 확인 버튼 표시 */}
+                  {!isClosed && payment.status === "reported" && (
                     <Button
                       size="sm"
                       variant="outline"

@@ -156,7 +156,7 @@ export default async function EventDetailPage({
 
         {/* 초대 링크 */}
         <div className="mb-6">
-          <InviteLinkCopy inviteToken={event.invite_token} />
+          <InviteLinkCopy inviteToken={event.invite_token} eventId={eventId} />
         </div>
 
         <Separator className="mb-6" />

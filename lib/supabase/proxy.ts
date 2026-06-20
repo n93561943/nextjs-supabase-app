@@ -8,14 +8,12 @@ export async function updateSession(request: NextRequest) {
     request,
   });
 
-  // If the env vars are not set, skip proxy check. You can remove this
-  // once you setup the project.
+  // 환경 변수 미설정 시 proxy 체크 스킵
   if (!hasEnvVars) {
     return supabaseResponse;
   }
 
-  // With Fluid compute, don't put this client in a global environment
-  // variable. Always create a new one on each request.
+  // Fluid compute 환경에서 전역 변수에 저장 금지 — 요청마다 새로 생성
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
@@ -39,40 +37,42 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  // Do not run code between createServerClient and
-  // supabase.auth.getClaims(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
-
-  // IMPORTANT: If you remove getClaims() and you use server-side rendering
-  // with the Supabase client, your users may be randomly logged out.
+  // getClaims()와 createServerClient 사이에 다른 코드를 넣지 말 것
+  // 세션 동기화 문제로 사용자가 갑자기 로그아웃될 수 있음
   const { data } = await supabase.auth.getClaims();
   const user = data?.claims;
 
+  // /auth/* 경로는 정지 체크 및 리다이렉트 예외 처리
+  const isAuthPath = request.nextUrl.pathname.startsWith("/auth");
+
+  // 미인증 사용자 리다이렉트 (공개 경로 제외)
   if (
     request.nextUrl.pathname !== "/" &&
     !user &&
     !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth") &&
+    !isAuthPath &&
     !request.nextUrl.pathname.startsWith("/invite")
   ) {
-    // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
     return NextResponse.redirect(url);
   }
 
-  // IMPORTANT: You *must* return the supabaseResponse object as it is.
-  // If you're creating a new response object with NextResponse.next() make sure to:
-  // 1. Pass the request in it, like so:
-  //    const myNewResponse = NextResponse.next({ request })
-  // 2. Copy over the cookies, like so:
-  //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
-  // 3. Change the myNewResponse object to fit your needs, but avoid changing
-  //    the cookies!
-  // 4. Finally:
-  //    return myNewResponse
-  // If this is not done, you may be causing the browser and server to go out
-  // of sync and terminate the user's session prematurely!
+  // 인증된 사용자의 정지 여부 확인 (/auth/* 경로는 제외)
+  if (user && !isAuthPath) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_suspended")
+      .eq("id", user.sub)
+      .single();
+
+    if (profile?.is_suspended === true) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/auth/login";
+      url.searchParams.set("error", "suspended");
+      return NextResponse.redirect(url);
+    }
+  }
 
   return supabaseResponse;
 }

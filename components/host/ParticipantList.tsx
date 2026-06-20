@@ -119,6 +119,7 @@ function ParticipantRow({
                 variant="ghost"
                 className="text-muted-foreground hover:text-destructive"
                 disabled={isPending}
+                aria-label="참여자 삭제"
               >
                 <Trash2Icon className="h-3.5 w-3.5" />
               </Button>

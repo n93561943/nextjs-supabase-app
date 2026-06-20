@@ -115,6 +115,9 @@ export async function SettlementSection({ eventId }: SettlementSectionProps) {
               <ReportPaymentButton
                 eventId={eventId}
                 paymentStatus={paymentStatus}
+                settlementStatus={
+                  settlement.status === "closed" ? "closed" : "open"
+                }
               />
             </>
           )}

@@ -158,6 +158,7 @@ export type Database = {
           display_name: string | null;
           full_name: string | null;
           id: string;
+          is_suspended: boolean | null;
           role: string | null;
           updated_at: string;
           username: string | null;
@@ -170,6 +171,7 @@ export type Database = {
           display_name?: string | null;
           full_name?: string | null;
           id: string;
+          is_suspended?: boolean | null;
           role?: string | null;
           updated_at?: string;
           username?: string | null;
@@ -182,6 +184,7 @@ export type Database = {
           display_name?: string | null;
           full_name?: string | null;
           id?: string;
+          is_suspended?: boolean | null;
           role?: string | null;
           updated_at?: string;
           username?: string | null;

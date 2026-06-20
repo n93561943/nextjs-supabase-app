@@ -5,10 +5,10 @@ import { createClient } from "@/lib/supabase/server";
 export default async function AdminUsersPage() {
   const supabase = await createClient();
 
-  // profiles 테이블 조회
+  // profiles 테이블 조회 (is_suspended 포함)
   const { data: profiles } = await supabase
     .from("profiles")
-    .select("id, display_name, created_at, role")
+    .select("id, display_name, created_at, role, is_suspended")
     .order("created_at", { ascending: false });
 
   return (
